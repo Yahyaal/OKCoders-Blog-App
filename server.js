@@ -21,9 +21,23 @@ app.get('/posts', function(req,res) {				// Define a GET /posts route
 });
 
 app.post('/posts', function(req,res) {				// Define a POST /posts route
-	var post = new Post(req.body);					// Create a new post document from the body
-	post.date = Date.now();
-	post.save().then(function() {					// Save the post and then...
-		res.json(true);								// Return true (true has no meaning here, we easily could return the post we just created)
-	});
+	var post = req.body;
+	if (post._id) {
+		post.date = Date.now();
+		Post.findOneAndUpdate({_id:post._id}, post).exec().then(function() {
+			res.json(true);
+		});
+	} else {
+		var newPost = new Post(post);					// Create a new post document from the body
+		newPost.date = Date.now();
+		newPost.save().then(function() {					// Save the post and then...
+			res.json(true);								// Return true (true has no meaning here, we easily could return the post we just created)
+		});
+	}
 });
+app.delete('/posts/:id', function(req,res) {
+	var id = req.params.id;
+	Post.findOneAndRemove({_id:id}).exec().then(function() {
+			res.json(true);
+		});
+})
